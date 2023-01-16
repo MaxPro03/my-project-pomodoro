@@ -1,6 +1,6 @@
 <template>
-  <main class="bg-gray-200 px-4 -mt-6">
-    <header>
+  <main class="bg-gray-200 px-4">
+    <!-- <header>
       <div>
         <button>
           Инфо
@@ -9,15 +9,13 @@
           Настройки
         </button>
       </div>
-    </header>
+    </header> -->
     <div class="relative flex h-screen min-h-screen flex-col">
       <Timer />
-      <StartButton />
     </div>
   </main>
 </template>
 
 <script setup>
   import Timer from './components/Timer.vue'
-  import StartButton from './components/StartButton.vue'
 </script>
