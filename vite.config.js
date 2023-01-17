@@ -9,7 +9,6 @@ export default defineConfig({
     vue(),
     VitePWA({ 
       registerType: 'prompt',
-      injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'apelsini_icon.svg'],
       manifest: {
         name: 'my-project-pomodoro',

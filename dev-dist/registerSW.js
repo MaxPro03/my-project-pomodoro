@@ -1,1 +1,0 @@
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/my-project-pomodoro/dev-sw.js?dev-sw', { scope: '/my-project-pomodoro/', type: 'classic' })
