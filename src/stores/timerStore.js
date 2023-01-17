@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export const useTimerStore = defineStore('timerStore', () => {
   const timerStart = ref(false)
@@ -10,7 +10,7 @@ export const useTimerStore = defineStore('timerStore', () => {
       id: 1,
       time: 1500,
       icon: '😓',
-      title: '25 min'
+      title: '25 min +1🍊'
     },
     {
       id: 2,
@@ -25,30 +25,47 @@ export const useTimerStore = defineStore('timerStore', () => {
       title: '15 min'
     },
   ])
+
+  const apelsins = ['🍊']
+
+  const timerOnLocalStorage = localStorage.getItem("timerStore")
+  if (timerOnLocalStorage) {
+    times.value = JSON.parse(timerOnLocalStorage)._value
+  }
+
   let INTERVAL;
   const startTimerStore = (time) => {
+    timerReset.value = false
     if (!timerReset.value) timerStart.value = true
 
     INTERVAL = setInterval(() => {
       if (time.time === 0) {
         clearInterval(INTERVAL)   
       }else {
+        localStorage.setItem('timerStore', JSON.stringify(times))
         time.time--
-        console.log(time);
       }
     }, 1000)
   }
 
-  const stopTimerStore = (time) => {
-    timerStart.value = false
+  const stopTimerStore = () => {
+    timerStart.value = !timerStart.value
     timerReset.value = true
 
     clearInterval(INTERVAL)
+    localStorage.setItem('timerStore', JSON.stringify(times))
   }
   
   const resetTimerStore = () => {
     timerReset.value = false
+
+    localStorage.removeItem('timerStore')
+    window.location.reload()
   }
+
+  // watch(() => times, (state) => {
+  //   localStorage.setItem('timerStore', JSON.stringify(state))
+  // }, {deep:true})
 
   return {
     timerStart,

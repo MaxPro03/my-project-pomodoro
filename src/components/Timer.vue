@@ -1,10 +1,13 @@
 <template>
   <div
-    class="mx-auto mt-12 h-40 w-40 rounded-full bg-orange-500 md:h-52 md:w-52"
+    class="mx-auto mt-12 h-40 w-40 rounded-full select-none pointer-events-none bg-orange-500 md:h-52 md:w-52"
   >
     <span class="flex h-full items-center justify-center text-lg text-white">    
       {{ Math.floor(selected.time / 60) }}:{{ selected.time % 60 < 10 ? '0' + selected.time % 60 : selected.time % 60}}
     </span>
+  </div>
+  <div class="flex justify-center mt-12">
+    🍊🍊🍊🍊🍊🍊🍊🍊
   </div>
   <Listbox as="div" v-model="selected" class="mx-auto mt-12 w-full md:w-52" v-if="!timerStore.timerStart && !timerStore.timerReset">
     <ListboxLabel class="block text-center text-sm font-medium text-gray-700">Choose time</ListboxLabel>
@@ -37,7 +40,7 @@
       </transition>
     </div>
   </Listbox>
-  {{ timerStore.times }}
+  <!-- {{ timerStore.times }} -->
   <StartButton :time="selected"/>
 </template>
 <script setup>
