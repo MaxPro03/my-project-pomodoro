@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 export const useTimerStore = defineStore('timerStore', () => {
   const timerStart = ref(false)
@@ -10,40 +10,50 @@ export const useTimerStore = defineStore('timerStore', () => {
       id: 1,
       time: 1500,
       icon: '😓',
-      title: '25 min +1🍊'
+      title: '25 min',
+      description: '+🍊',
     },
     {
-      id: 2,
+      id: 3,
       time: 300,
       icon: '☕',
-      title: '5 min'
+      title: '5 min',
+      description: '',
     },
     {
       id: 3,
       time: 900,
       icon: '😴',
-      title: '15 min'
+      title: '15 min',
+      description: '',
     },
   ])
 
-  const apelsins = ['🍊']
+  const oranges = ref([])
 
   const timerOnLocalStorage = localStorage.getItem("timerStore")
   if (timerOnLocalStorage) {
     times.value = JSON.parse(timerOnLocalStorage)._value
   }
 
+  const orangesOnLocalStorage = localStorage.getItem("orangesStore")
+  if (orangesOnLocalStorage) {
+    oranges.value = JSON.parse(orangesOnLocalStorage)._value
+  }
+
   let INTERVAL;
-  const startTimerStore = (time) => {
+  const startTimerStore = (timerData) => {
     timerReset.value = false
     if (!timerReset.value) timerStart.value = true
 
     INTERVAL = setInterval(() => {
-      if (time.time === 0) {
-        clearInterval(INTERVAL)   
+      if (timerData.time === 0) {
+        addNewOranges() 
+        timerStart.value = false
+        clearInterval(INTERVAL) 
       }else {
         localStorage.setItem('timerStore', JSON.stringify(times))
-        time.time--
+        timerData.time--
       }
     }, 1000)
   }
@@ -63,38 +73,20 @@ export const useTimerStore = defineStore('timerStore', () => {
     window.location.reload()
   }
 
-  // watch(() => times, (state) => {
-  //   localStorage.setItem('timerStore', JSON.stringify(state))
-  // }, {deep:true})
+  const addNewOranges = () => {
+    if (times.value[0].time === 0 && oranges.value.length < 8) {
+      oranges.value.push('🍊')
+      localStorage.setItem('orangesStore', JSON.stringify(oranges))
+    }
+  }
 
   return {
     timerStart,
     timerReset,
     times,
+    oranges,
     startTimerStore,
     stopTimerStore,
     resetTimerStore
   }
 })
-
-// export const useTimerStore = defineStore('timerStore', {
-//   state: () => ({
-//     timerStart: false,
-//     timerReset: false,
-//     workTime: 1500,
-//     minRelaxTime: 300,
-//     maxRelaxTime: 900,
-//   }),
-//   actions: {
-//     startTimerStore() {
-//       if (!this.timerReset) this.timerStart = true
-//     },
-//     stopTimerStore() {
-//       this.timerStart = false
-//       this.timerReset = true
-//     },
-//     resetTimerStore() {
-//       this.timerReset = false
-//     },
-//   },
-// })

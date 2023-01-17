@@ -7,7 +7,9 @@
     </span>
   </div>
   <div class="flex justify-center mt-12">
-    🍊🍊🍊🍊🍊🍊🍊🍊
+    <span v-for="(orange, index) in timerStore.oranges" :key="index">
+      {{ orange }}
+    </span>
   </div>
   <Listbox as="div" v-model="selected" class="mx-auto mt-12 w-full md:w-52" v-if="!timerStore.timerStart && !timerStore.timerReset">
     <ListboxLabel class="block text-center text-sm font-medium text-gray-700">Choose time</ListboxLabel>
@@ -16,6 +18,7 @@
         <span class="flex items-center">
           <span class="h-6 w-6 flex-shrink-0 rounded-full">{{ selected.icon }}</span>
           <span class="ml-3 block truncate">{{ selected.title }}</span>
+          <span class="ml-3 block truncate text-gray-500 text-xs">{{ selected.description }}</span>
         </span>
         <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
           <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -29,6 +32,7 @@
               <div class="flex items-center">
                 <span class="h-6 w-6 flex-shrink-0 rounded-full">{{ person.icon }}</span>
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ person.title }}</span>
+                <span :class="[selected ? 'font-semibold' : 'font-light', 'ml-3 block truncate text-gray-500 text-xs']">{{ person.description }}</span>
               </div>
 
               <span v-if="selected" :class="[active ? 'text-white' : 'text-orange-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
@@ -40,13 +44,12 @@
       </transition>
     </div>
   </Listbox>
-  <!-- {{ timerStore.times }} -->
-  <StartButton :time="selected"/>
+  <StartButton :timerData="selected"/>
 </template>
 <script setup>
 import StartButton from './StartButton.vue'
 import { useTimerStore } from '../stores/timerStore'
-import { ref, watch } from 'vue'
+import { ref, watch, watchEffect } from 'vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 
