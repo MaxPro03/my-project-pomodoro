@@ -4,36 +4,36 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // base: '/my-project-pomodoro/',
+  base: '/my-project-pomodoro/',
   plugins: [
     vue(),
-    // VitePWA({ 
-    //   registerType: 'prompt',
-    //   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'apelsini_icon.svg'],
-    //   manifest: {
-    //     name: 'my-project-pomodoro',
-    //     short_name: 'Pomodoro',
-    //     description: 'Apelsini',
-    //     theme_color: '#FFFFFF',
-    //     icons: [
-    //       {
-    //         src: 'android-chrome-192x192.png',
-    //         sizes: '192x192',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: 'android-chrome-512x512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: 'android-chrome-512x512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png',
-    //         purpose: 'any maskable'
-    //       },
-    //     ]
-    //   }
-    // })
+    VitePWA({ 
+      registerType: 'prompt',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'apelsini_icon.svg'],
+      manifest: {
+        name: 'my-project-pomodoro',
+        short_name: 'Pomodoro',
+        description: 'Apelsini',
+        theme_color: '#FFFFFF',
+        icons: [
+          {
+            src: 'android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+        ]
+      }
+    })
   ],
 })
