@@ -7,6 +7,33 @@ export default defineConfig({
   base: '/my-project-pomodoro/',
   plugins: [
     vue(),
-    VitePWA({ registerType: 'autoUpdate' })
+    VitePWA({ 
+      registerType: 'prompt',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'apelsini_icon.svg'],
+      manifest: {
+        name: 'my-project-pomodoro',
+        description: 'Apelsini',
+        theme_color: '#FFFFFF',
+        start_url: '/',
+        icons: [
+          {
+            src: 'android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+        ]
+      }
+    })
   ],
 })
