@@ -12,6 +12,8 @@
     "@headlessui/vue": "^1.7.7",
     "@heroicons/vue": "^2.0.13",
     "pinia": "^2.0.28",
+    "three": "^0.134.0",
+    "troisjs": "^0.3.4",
     "vue": "^3.2.45"
   },
   "devDependencies": {

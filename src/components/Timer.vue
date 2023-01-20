@@ -6,13 +6,30 @@
       {{ Math.floor(selected.time / 60) }}:{{ selected.time % 60 < 10 ? '0' + selected.time % 60 : selected.time % 60}}
     </span>
   </div>
-  <div class="flex justify-center mt-12">
+  <div class="flex justify-center mt-12 mr-6 select-none pointer-events-none">
     <span v-for="(orange, index) in timerStore.oranges" :key="index">
+      <span v-if="index % 4 === 0">&nbsp;</span>
+      <!-- <span class="grayscale">
+        🍊
+      </span> -->
       {{ orange }}
     </span>
   </div>
+  <!-- <Renderer orbit-ctrl ref="renderer">
+    <Camera :position="{ z: 2 }" />
+    <Scene background="rgb(229, 231, 235)">
+      <PointLight :position="{ y: 15, z: 50 }" />
+      <Box ref="box" :rotation="{ y: Math.PI / 4, z: Math.PI / 4 }">
+        <LambertMaterial />
+      </Box>
+      <GltfModel 
+        src="./src/assets/models/orange/scene.gltf"
+        @load="onReady"
+      />
+    </Scene>
+  </Renderer> -->
   <Listbox as="div" v-model="selected" class="mx-auto mt-12 w-full md:w-52" v-if="!timerStore.timerStart && !timerStore.timerReset">
-    <ListboxLabel class="block text-center text-sm font-medium text-gray-700">Choose time</ListboxLabel>
+    <ListboxLabel class="block text-center text-sm font-medium text-gray-700 select-none pointer-events-none">Choose time</ListboxLabel>
     <div class="relative mt-1">
       <ListboxButton class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 sm:text-sm">
         <span class="flex items-center">
@@ -49,12 +66,39 @@
 <script setup>
 import StartButton from './StartButton.vue'
 import { useTimerStore } from '../stores/timerStore'
-import { ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
+// import { AmbientLight } from 'three'
+// import { GltfModel } from 'troisjs'
 
 const timerStore = useTimerStore()
 
 const selected = ref(timerStore.times[0])
+
+// const renderer = ref(null)
+// const box = ref(null)
+
+watchEffect(() => {
+  if (timerStore.oranges.length > 0) {
+    if (timerStore.oranges.length % 4 == 0) {
+      selected.value = timerStore.times[2]
+    } else if (timerStore.times[0].time === 0) {
+      selected.value = timerStore.times[1]
+    } else {
+      selected.value = timerStore.times[0]
+    }
+  }
+})
+
+// function onReady(e) {
+//   console.log("Model is ready");
+// }
+
+// onMounted(() => {
+//     renderer?.value?.onBeforeRender(() => {
+//       box.value.mesh.rotation.x += 0.01;
+//     })
+// })
 
 </script>
