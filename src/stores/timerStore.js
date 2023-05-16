@@ -1,8 +1,9 @@
-import { defineStore } from 'pinia'
+import { createPinia, defineStore } from 'pinia'
 import { onMounted, reactive, readonly, ref } from 'vue'
 
 export const useTimerStore = defineStore('timerStore', () => {
-  const initialTimes = [
+
+  const times = ref([
     {
       id: 1,
       time: 3,
@@ -11,7 +12,7 @@ export const useTimerStore = defineStore('timerStore', () => {
       description: '+🍊',
     },
     {
-      id: 3,
+      id: 2,
       time: 4,
       icon: '☕',
       title: '5 min',
@@ -24,9 +25,7 @@ export const useTimerStore = defineStore('timerStore', () => {
       title: '15 min',
       description: '',
     },
-  ]
-
-  const times = ref([])
+  ])
 
   const timerStart = ref(false)
   const timerReset = ref(false)
@@ -34,14 +33,14 @@ export const useTimerStore = defineStore('timerStore', () => {
   const oranges = ref([])
 
   const timerOnLocalStorage = localStorage.getItem("timerStore")
-  // if (timerOnLocalStorage) {
-  //   times.value = JSON.parse(timerOnLocalStorage)._value
-  // }
+  if (timerOnLocalStorage) {
+    times.value = JSON.parse(timerOnLocalStorage)._value
+  }
 
   const orangesOnLocalStorage = localStorage.getItem("orangesStore")
-  // if (orangesOnLocalStorage) {
-  //   oranges.value = JSON.parse(orangesOnLocalStorage)._value
-  // }
+  if (orangesOnLocalStorage) {
+    oranges.value = JSON.parse(orangesOnLocalStorage)._value
+  }
 
   let INTERVAL;
   const startTimerStore = (timerData) => {
@@ -50,11 +49,10 @@ export const useTimerStore = defineStore('timerStore', () => {
 
     INTERVAL = setInterval(() => {
       if (timerData.time === 0) {
-        addNewOranges() 
-        timerStart.value = false
         clearInterval(INTERVAL) 
+        timerStart.value = false
+        addNewOranges() 
       }else {
-        localStorage.setItem('timerStore', JSON.stringify(times))
         timerData.time--
       }
     }, 1000)

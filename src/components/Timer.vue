@@ -1,5 +1,6 @@
 <template>
-  <div
+    <ThreeJS />
+    <div
     class="mx-auto mt-12 h-40 w-40 rounded-full select-none pointer-events-none bg-orange-500 md:h-52 md:w-52"
   >
     <span class="flex h-full items-center justify-center text-lg text-white">    
@@ -15,19 +16,6 @@
       {{ orange }}
     </span>
   </div>
-  <!-- <Renderer orbit-ctrl ref="renderer">
-    <Camera :position="{ z: 2 }" />
-    <Scene background="rgb(229, 231, 235)">
-      <PointLight :position="{ y: 15, z: 50 }" />
-      <Box ref="box" :rotation="{ y: Math.PI / 4, z: Math.PI / 4 }">
-        <LambertMaterial />
-      </Box>
-      <GltfModel 
-        src="./src/assets/models/orange/scene.gltf"
-        @load="onReady"
-      />
-    </Scene>
-  </Renderer> -->
   <Listbox as="div" v-model="selected" class="mx-auto mt-12 w-full md:w-52" v-if="!timerStore.timerStart && !timerStore.timerReset">
     <ListboxLabel class="block text-center text-sm font-medium text-gray-700 select-none pointer-events-none">Choose time</ListboxLabel>
     <div class="relative mt-1">
@@ -64,20 +52,21 @@
   <StartButton :timerData="selected"/>
 </template>
 <script setup>
+import ThreeJS from "./ThreeJS.vue";
 import StartButton from './StartButton.vue'
 import { useTimerStore } from '../stores/timerStore'
 import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
-// import { AmbientLight } from 'three'
-// import { GltfModel } from 'troisjs'
+import { AmbientLight } from 'three'
+import { GltfModel } from 'troisjs'
 
 const timerStore = useTimerStore()
 
 const selected = ref(timerStore.times[0])
 
-// const renderer = ref(null)
-// const box = ref(null)
+const renderer = ref(null)
+const box = ref(null)
 
 watchEffect(() => {
   if (timerStore.oranges.length > 0) {
@@ -91,14 +80,14 @@ watchEffect(() => {
   }
 })
 
-// function onReady(e) {
-//   console.log("Model is ready");
-// }
+function onReady(e) {
+  console.log("Model is ready");
+}
 
-// onMounted(() => {
-//     renderer?.value?.onBeforeRender(() => {
-//       box.value.mesh.rotation.x += 0.01;
-//     })
-// })
+onMounted(() => {
+    renderer?.value?.onBeforeRender(() => {
+      box.value.mesh.rotation.x += 0.01;
+    })
+})
 
 </script>
