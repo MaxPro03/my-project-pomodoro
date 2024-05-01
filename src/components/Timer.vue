@@ -1,5 +1,4 @@
 <template>
-  <!-- <ThreeJS /> -->
   <div class="pointer-events-none mx-auto mt-12 h-40 w-40 select-none rounded-full bg-orange-500 md:h-52 md:w-52">
     <span class="flex h-full items-center justify-center text-lg text-white">
       {{ Math.floor(selected.time / 60) }}:{{
@@ -82,14 +81,11 @@
   <StartButton :timerData="selected" />
 </template>
 <script setup>
-import ThreeJS from './ThreeJS.vue'
 import StartButton from './StartButton.vue'
 import { useTimerStore } from '../stores/timerStore'
 import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
-import { AmbientLight } from 'three'
-import { GltfModel } from 'troisjs'
 
 const timerStore = useTimerStore()
 
