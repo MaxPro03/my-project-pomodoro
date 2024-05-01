@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/sw.js', { scope: '/' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('https://maxpro03.github.io/my-project-pomodoro/sw.js', { scope: 'https://maxpro03.github.io/my-project-pomodoro/' })})}
