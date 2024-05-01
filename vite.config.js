@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/',
+  base: 'https://maxpro03.github.io/my-project-pomodoro/',
   plugins: [
     vue(),
     VitePWA({
