@@ -8,7 +8,12 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'prompt',
+      // no update prompt in the UI, so a new version must activate on its own
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,otf,png,svg,ico}'],
+        cleanupOutdatedCaches: true,
+      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'apelsini_icon.svg'],
       manifest: {
         name: 'my-project-pomodoro',

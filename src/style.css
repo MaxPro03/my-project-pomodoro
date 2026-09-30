@@ -2,13 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* served from public/ with a stable URL so index.html can preload it */
+@font-face {
+    font-family: 'Monocraft';
+    src: url('/fonts/Monocraft.otf') format('opentype');
+    /* hide text until the font is ready instead of swapping fonts and shifting the layout */
+    font-display: block;
+}
+
 @layer base {
     html {
-        font-family: 'Monocraft';
-    }
-
-    @font-face {
-        font-family: 'Monocraft';
-        src: local('Monocraft'), url(./assets/fonts/Monocraft.otf) format('truetype');
+        font-family: 'Monocraft', monospace;
     }
 }
