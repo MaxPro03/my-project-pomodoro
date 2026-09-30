@@ -28,7 +28,7 @@
 
     <section class="stage flex w-full flex-col items-center gap-4 p-6" :style="{ '--accent': accent }">
       <div ref="bigOrange" class="relative" :class="{ bob: timer.running, jump: jumping }">
-        <PixelSprite :rows="ORANGE" :palette="bigPalette" :px="12" :style="{ opacity: flying ? 0.25 : 1 }" />
+        <Orange3D :palette="bigPalette" :spinning="timer.running" :style="{ opacity: flying ? 0.25 : 1 }" />
         <span v-if="timer.phase !== 'focus'" class="zzz absolute -right-6 -top-2 text-lg text-sky-300">z</span>
       </div>
 
@@ -95,6 +95,7 @@ import { sfx } from '../game/sound'
 import PixelSprite from './PixelSprite.vue'
 import PixelButton from './PixelButton.vue'
 import OrangeBasket from './OrangeBasket.vue'
+import Orange3D from './Orange3D.vue'
 
 const ACCENTS = { focus: '#f7901e', short: '#38b764', long: '#41a6f6' }
 const SEGMENTS = 20
