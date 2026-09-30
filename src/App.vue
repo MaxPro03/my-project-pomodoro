@@ -1,5 +1,5 @@
 <template>
-  <main class="crt min-h-screen bg-[#1a1c2c] px-4 text-white">
+  <main class="crt app-screen overflow-y-auto px-4 text-white">
     <Timer />
   </main>
 </template>
@@ -9,6 +9,21 @@ import Timer from './components/Timer.vue'
 </script>
 
 <style>
+html,
+body {
+  height: 100%;
+  background: #1a1c2c; /* no white strips on overscroll or behind the browser bars */
+}
+
+/* exactly one screen tall; dvh follows the mobile browser bars, vh is the fallback */
+.app-screen {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* faint CRT scanlines over the whole game screen */
 .crt::after {
   content: '';

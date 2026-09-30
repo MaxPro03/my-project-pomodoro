@@ -1,5 +1,5 @@
 <template>
-  <div class="screen mx-auto flex w-full max-w-md flex-col items-center gap-8 py-8" :class="{ shake }">
+  <div class="screen mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-between gap-4 py-4" :class="{ shake }">
     <header class="flex w-full items-center justify-between">
       <h1 class="text-xl tracking-widest text-orange-400">APELSINI</h1>
       <div class="flex items-center gap-4">
@@ -358,6 +358,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   0% { transform: scale(0); }
   60% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+/* squeeze the stage on short phones so everything fits one screen */
+@media (max-height: 720px) {
+  .stage {
+    gap: 8px;
+    padding: 12px 24px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -19,7 +19,8 @@ export default defineConfig({
         name: 'my-project-pomodoro',
         short_name: 'Pomodoro',
         description: 'Apelsini',
-        theme_color: '#FFFFFF',
+        theme_color: '#1a1c2c',
+        background_color: '#1a1c2c',
         icons: [
           {
             src: 'android-chrome-192x192.png',
