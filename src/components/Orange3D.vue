@@ -17,7 +17,9 @@ import * as THREE from 'three'
 const props = defineProps({
   // same palette keys as the pixel sprite: o body, w highlight, d shadow, b stem, L leaf
   palette: { type: Object, required: true },
-  spinning: { type: Boolean, default: false },
+  // sways faster while the timer runs
+  lively: { type: Boolean, default: false },
+  expression: { type: String, default: 'open' }, // open | sleep | happy
   // css size is set by the parent, this only sets the render resolution
   size: { type: Number, default: 168 },
 })
@@ -28,6 +30,24 @@ const RADIUS = 6
 const TILT = 0.15 // resting tilt towards the camera
 const DRAG_SPEED = 0.02 // radians per dragged css pixel
 const MAX_FLING = 0.6 // radians per frame
+
+// face drawn on the front of the sphere, as [x, y] of the voxel column facing the camera
+const EYES = {
+  open: [[-2, 1], [-2, 2], [2, 1], [2, 2]],
+  closed: [[-3, 1], [-2, 1], [2, 1], [3, 1]],
+  happy: [[-3, 1], [-2, 2], [-1, 1], [1, 1], [2, 2], [3, 1]], // ^ ^
+}
+const MOUTHS = {
+  smile: [[-1, 0], [0, -1], [1, 0]],
+  small: [[0, -1]],
+  grin: [[-1, -1], [0, -1], [1, -1], [0, -2]],
+}
+const CHEEKS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+const EXPRESSIONS = {
+  open: { eyes: 'open', mouth: 'smile' },
+  sleep: { eyes: 'closed', mouth: 'small' },
+  happy: { eyes: 'happy', mouth: 'grin' },
+}
 
 const canvas = ref(null)
 
@@ -50,7 +70,9 @@ function buildVoxels() {
         )
         if (!surface) continue
         const noise = hash(x, y, z)
-        const key = y < -RADIUS * 0.7 && noise < 0.5 ? 'd' : noise < 0.07 ? 'd' : 'o'
+        // keep the face area clean so dimples don't look like extra eyes
+        const onFace = z >= 2 && Math.abs(x) <= 5 && y >= -3 && y <= 3
+        const key = onFace ? 'o' : y < -RADIUS * 0.7 && noise < 0.5 ? 'd' : noise < 0.07 ? 'd' : 'o'
         voxels.push({ x, y, z, key })
       }
     }
@@ -64,14 +86,24 @@ function buildVoxels() {
 }
 
 let renderer, scene, camera, mesh, voxels, frame, lastFrame = 0
+let front // "x,y" -> index of the voxel closest to the camera in that column
+let blinkFrames = 0
+let nextBlink = 0
 
 const dragging = ref(false)
 let pointer = null
 let fling = 0 // spin left over after a drag, decays every frame
 
 function paint() {
+  const { eyes, mouth } = EXPRESSIONS[props.expression] ?? EXPRESSIONS.open
+  const face = new Map()
+  const draw = (points, key) => points.forEach(([x, y]) => face.set(front.get(`${x},${y}`), key))
+  draw(CHEEKS, 'c')
+  draw(EYES[blinkFrames > 0 ? 'closed' : eyes], 'e')
+  draw(MOUTHS[mouth], 'm')
+
   const color = new THREE.Color()
-  voxels.forEach((v, i) => mesh.setColorAt(i, color.set(props.palette[v.key])))
+  voxels.forEach((v, i) => mesh.setColorAt(i, color.set(props.palette[face.get(i) ?? v.key])))
   mesh.instanceColor.needsUpdate = true
 }
 
@@ -101,14 +133,31 @@ function onPointerUp() {
   dragging.value = false
 }
 
+const wrapAngle = (a) => a - Math.PI * 2 * Math.round(a / (Math.PI * 2))
+
+// blink every few seconds while awake
+function blink(time) {
+  if (blinkFrames > 0 && --blinkFrames === 0) paint()
+  if (props.expression !== 'open' || time < nextBlink) return
+  nextBlink = time + 2500 + Math.random() * 3000
+  blinkFrames = 2
+  paint()
+}
+
 function loop(time) {
   frame = requestAnimationFrame(loop)
   // follow the finger every frame while dragging, otherwise step at the retro frame rate
   if (!dragging.value) {
     if (time - lastFrame < 1000 / FPS) return
-    mesh.rotation.y += (props.spinning ? Math.PI / 16 : Math.PI / 48) + fling
-    mesh.rotation.x += (TILT - mesh.rotation.x) * 0.3
+    mesh.rotation.y += fling
     fling *= 0.85
+    // once a fling dies down, turn back to face the viewer and sway gently
+    if (Math.abs(fling) < 0.05) {
+      const sway = Math.sin(time / (props.lively ? 350 : 900)) * 0.35
+      mesh.rotation.y += wrapAngle(sway - mesh.rotation.y) * 0.35
+    }
+    mesh.rotation.x += (TILT - mesh.rotation.x) * 0.3
+    blink(time)
   }
   lastFrame = time
   renderer.render(scene, camera)
@@ -123,7 +172,7 @@ onMounted(() => {
 
   scene = new THREE.Scene()
   camera = new THREE.PerspectiveCamera(30, 1, 1, 100)
-  camera.position.set(0, 9, 30)
+  camera.position.set(0, 5, 30)
   camera.lookAt(0, 0.5, 0)
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.4))
@@ -132,6 +181,11 @@ onMounted(() => {
   scene.add(sun)
 
   voxels = buildVoxels()
+  front = new Map()
+  voxels.forEach((v, i) => {
+    const key = `${v.x},${v.y}`
+    if (!front.has(key) || v.z > voxels[front.get(key)].z) front.set(key, i)
+  })
   mesh = new THREE.InstancedMesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshLambertMaterial({ color: 0xffffff }),
@@ -146,7 +200,7 @@ onMounted(() => {
   frame = requestAnimationFrame(loop)
 })
 
-watch(() => props.palette, () => mesh && paint())
+watch([() => props.palette, () => props.expression], () => mesh && paint())
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(frame)

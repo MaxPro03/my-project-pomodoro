@@ -39,7 +39,8 @@
           <Orange3D
             class="h-full w-full"
             :palette="bigPalette"
-            :spinning="timer.running"
+            :lively="timer.running"
+            :expression="orangeMood"
             :style="{ opacity: flying ? 0.25 : 1 }" />
           <span v-if="timer.phase !== 'focus'" class="zzz absolute -right-6 -top-2 text-lg text-sky-300">z</span>
         </div>
@@ -146,6 +147,7 @@ const clock = computed(() => {
 })
 const filledSegments = computed(() => Math.floor(timer.progress * SEGMENTS))
 const bigPalette = computed(() => (timer.phase === 'focus' ? paletteForProgress(timer.progress) : PALETTES.ripe))
+const orangeMood = computed(() => (jumping.value || flying.value ? 'happy' : timer.onBreak ? 'sleep' : 'open'))
 const hint = computed(() => `#${timer.round} · ${timer.message}`)
 
 const sound = (name) => !timer.muted && sfx[name]()
