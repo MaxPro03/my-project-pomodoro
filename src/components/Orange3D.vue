@@ -3,7 +3,6 @@
     ref="canvas"
     class="orange-3d"
     :class="{ dragging }"
-    :style="{ width: size + 'px', height: size + 'px' }"
     aria-hidden="true"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
@@ -19,6 +18,7 @@ const props = defineProps({
   // same palette keys as the pixel sprite: o body, w highlight, d shadow, b stem, L leaf
   palette: { type: Object, required: true },
   spinning: { type: Boolean, default: false },
+  // css size is set by the parent, this only sets the render resolution
   size: { type: Number, default: 168 },
 })
 

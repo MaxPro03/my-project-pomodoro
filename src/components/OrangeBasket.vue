@@ -1,5 +1,6 @@
 <template>
-  <div class="flex flex-wrap justify-center gap-4">
+  <!-- one row of crates that scrolls sideways, so the basket never grows taller -->
+  <div ref="row" class="mx-auto flex w-max max-w-full gap-4 overflow-x-auto p-3">
     <div
       v-for="crate in crates"
       :key="crate"
@@ -18,7 +19,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import PixelSprite from './PixelSprite.vue'
 import { ORANGE, PALETTES } from '../game/sprites'
 
@@ -36,6 +37,12 @@ const poppedCrate = ref(-1)
 const visible = computed(() => props.count - props.pending)
 // always show one crate with room for the next orange
 const crates = computed(() => Math.floor(props.count / props.perCrate) + 1)
+
+// keep the newest crate in view
+const row = ref(null)
+const scrollToEnd = () => nextTick(() => row.value && (row.value.scrollLeft = row.value.scrollWidth))
+onMounted(scrollToEnd)
+watch(crates, scrollToEnd)
 
 const isFilled = (crate, slot) => (crate - 1) * props.perCrate + slot - 1 < visible.value
 
@@ -57,6 +64,7 @@ defineExpose({ slotEl: (index) => slots[index], pop })
 
 <style scoped>
 .crate {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(2, auto);
   gap: 6px;

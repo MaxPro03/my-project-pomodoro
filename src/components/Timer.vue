@@ -1,6 +1,6 @@
 <template>
-  <div class="screen mx-auto flex min-h-full w-full max-w-md flex-col items-center justify-between gap-4 py-4" :class="{ shake }">
-    <header class="flex w-full items-center justify-between">
+  <div class="screen mx-auto flex h-full w-full max-w-md flex-col items-center justify-between gap-3 py-3" :class="{ shake }">
+    <header class="flex w-full shrink-0 items-center justify-between">
       <h1 class="text-xl tracking-widest text-orange-400">APELSINI</h1>
       <div class="flex items-center gap-4">
         <span class="text-sm">🍊 x{{ timer.oranges }}</span>
@@ -13,26 +13,35 @@
       </div>
     </header>
 
-    <nav class="flex w-full justify-between gap-2">
+    <nav class="flex w-full shrink-0 justify-between gap-2">
       <button
         v-for="p in PHASES"
         :key="p.id"
         class="tab flex-1 py-2 text-xs"
         :class="{ active: timer.phase === p.id }"
         :style="{ '--accent': ACCENTS[p.id] }"
-        :disabled="timer.running"
+        :disabled="timer.locked"
         @click="choosePhase(p.id)">
         {{ p.icon }} {{ p.title }}
       </button>
     </nav>
 
-    <section class="stage flex w-full flex-col items-center gap-4 p-6" :style="{ '--accent': accent }">
-      <div ref="bigOrange" class="relative" :class="{ bob: timer.running, jump: jumping }">
-        <Orange3D :palette="bigPalette" :spinning="timer.running" :style="{ opacity: flying ? 0.25 : 1 }" />
-        <span v-if="timer.phase !== 'focus'" class="zzz absolute -right-6 -top-2 text-lg text-sky-300">z</span>
+    <!-- the stage takes whatever height is left, the orange shrinks to fit it -->
+    <section
+      class="stage flex max-h-[28rem] min-h-0 w-full flex-1 flex-col items-center gap-4 p-6"
+      :style="{ '--accent': accent }">
+      <div class="flex min-h-0 w-full flex-1 items-center justify-center">
+        <div ref="bigOrange" class="orange-box relative" :class="{ bob: timer.running, jump: jumping }">
+          <Orange3D
+            class="h-full w-full"
+            :palette="bigPalette"
+            :spinning="timer.running"
+            :style="{ opacity: flying ? 0.25 : 1 }" />
+          <span v-if="timer.phase !== 'focus'" class="zzz absolute -right-6 -top-2 text-lg text-sky-300">z</span>
+        </div>
       </div>
 
-      <p class="text-5xl tabular-nums tracking-wider" :style="{ color: accent }">{{ clock }}</p>
+      <p class="clock tabular-nums tracking-wider" :style="{ color: accent }">{{ clock }}</p>
 
       <div class="bar flex w-full gap-1" role="progressbar" :aria-valuenow="Math.round(timer.progress * 100)">
         <span
@@ -45,15 +54,15 @@
       <p class="h-4 text-xs text-slate-400">{{ hint }}</p>
     </section>
 
-    <div class="flex flex-wrap items-center justify-center gap-6">
+    <div class="flex shrink-0 flex-wrap items-center justify-center gap-6">
       <PixelButton :color="timer.running ? '#566c86' : accent" class="w-36" @click="toggle">
         {{ timer.running ? 'Pause' : timer.touched ? 'Resume' : 'Start' }}
       </PixelButton>
       <PixelButton v-if="timer.touched && !timer.running" color="#b13e53" @click="timer.reset()">Reset</PixelButton>
-      <PixelButton v-if="!timer.running" color="#333c57" @click="skip">Skip</PixelButton>
+      <PixelButton v-if="!timer.locked" color="#333c57" @click="skip">Skip</PixelButton>
     </div>
 
-    <section class="flex w-full flex-col items-center gap-4">
+    <section class="flex w-full shrink-0 flex-col items-center gap-2">
       <h2 class="text-xs tracking-widest text-slate-400">
         TODAY'S HARVEST · {{ untilLongBreak }} TO BIG REST
       </h2>
@@ -126,8 +135,9 @@ const filledSegments = computed(() => Math.floor(timer.progress * SEGMENTS))
 const bigPalette = computed(() => (timer.phase === 'focus' ? paletteForProgress(timer.progress) : PALETTES.ripe))
 const untilLongBreak = computed(() => timer.ORANGES_PER_CRATE - timer.streak)
 const hint = computed(() => {
-  if (timer.phase !== 'focus') return timer.running ? 'rest a bit...' : 'take a break'
-  if (!timer.running) return timer.touched ? 'paused' : 'press start or space'
+  if (timer.phase !== 'focus' && !timer.locked) return 'take a break'
+  if (timer.phase !== 'focus' && timer.running) return 'rest a bit...'
+  if (!timer.running) return timer.touched ? 'paused · reset to switch mode' : 'press start or space'
   return timer.progress < 0.4 ? 'growing...' : timer.progress < 0.8 ? 'ripening...' : 'almost ripe!'
 })
 
@@ -143,7 +153,7 @@ const skip = () => {
 }
 const choosePhase = (id) => {
   sound('blip')
-  timer.setPhase(id)
+  timer.selectPhase(id)
 }
 const clearOranges = () => {
   if (confirm('Clear today\'s oranges?')) timer.clearOranges()
@@ -201,7 +211,7 @@ async function playHarvest() {
   await nextTick()
   const target = basket.value?.slotEl(index)
   if (target && flyer.value && bigOrange.value) {
-    target.scrollIntoView({ block: 'nearest' })
+    target.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     const from = center(bigOrange.value)
     const to = center(target)
     const size = flyer.value.getBoundingClientRect().width
@@ -358,6 +368,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   0% { transform: scale(0); }
   60% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+.orange-box {
+  height: 100%;
+  max-height: 168px;
+  aspect-ratio: 1;
+}
+.clock {
+  font-size: clamp(2rem, 7dvh, 3rem);
+  line-height: 1;
 }
 
 /* squeeze the stage on short phones so everything fits one screen */

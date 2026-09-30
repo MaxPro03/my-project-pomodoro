@@ -56,6 +56,8 @@ export const useTimerStore = defineStore('timerStore', () => {
   )
   const progress = computed(() => 1 - secondsLeft.value / duration.value)
   const touched = computed(() => running.value || remaining.value !== duration.value)
+  // a started or paused session keeps its mode until it finishes or is reset
+  const locked = touched
   const nextBreak = computed(() => ((streak.value + 1) % ORANGES_PER_CRATE === 0 ? 'long' : 'short'))
 
   const tick = () => {
@@ -113,8 +115,14 @@ export const useTimerStore = defineStore('timerStore', () => {
     }
   }
 
+  const selectPhase = (id) => {
+    if (!locked.value) setPhase(id)
+  }
+
   // skipping a focus session doesn't earn an orange
-  const skip = () => setPhase(phase.value === 'focus' ? nextBreak.value : 'focus')
+  const skip = () => {
+    if (!locked.value) setPhase(phase.value === 'focus' ? nextBreak.value : 'focus')
+  }
 
   const clearOranges = () => {
     oranges.value = 0
@@ -159,8 +167,9 @@ export const useTimerStore = defineStore('timerStore', () => {
     secondsLeft,
     progress,
     touched,
+    locked,
     nextBreak,
-    setPhase,
+    selectPhase,
     start,
     pause,
     toggle,
