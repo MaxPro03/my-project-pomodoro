@@ -84,8 +84,8 @@ defineExpose({ slotEl: (index) => slots[index], pop })
 .slot {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   background: #3e2510;
 }
 .slot-pop {
