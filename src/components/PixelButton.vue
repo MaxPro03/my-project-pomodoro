@@ -38,6 +38,11 @@ defineProps({ color: { type: String, default: '#f7901e' } })
     4px 0 0 0 #1a1c2c,
     inset 0 4px 0 0 rgb(0 0 0 / 0.3);
 }
+.pixel-btn:disabled {
+  cursor: default;
+  filter: saturate(0.7);
+  pointer-events: none;
+}
 .pixel-btn:focus-visible {
   outline: 4px dashed #fff;
   outline-offset: 8px;

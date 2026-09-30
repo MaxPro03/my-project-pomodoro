@@ -12,7 +12,8 @@ import Timer from './components/Timer.vue'
 html,
 body {
   height: 100%;
-  background: #1a1c2c; /* no white strips on overscroll or behind the browser bars */
+  background: var(--page-bg, #1a1c2c); /* no white strips on overscroll or behind the browser bars */
+  transition: background-color 400ms steps(4);
 }
 
 /* exactly one screen tall; dvh follows the mobile browser bars, vh is the fallback */

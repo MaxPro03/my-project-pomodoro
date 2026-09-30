@@ -10,9 +10,13 @@
           @click="timer.muted = !timer.muted">
           {{ timer.muted ? '🔇' : '🔊' }}
         </button>
+        <button class="text-sm text-slate-400 hover:text-white" aria-label="Settings" @click="settingsOpen = true">
+          ⚙️
+        </button>
       </div>
     </header>
 
+    <!-- like pomofocus: any mode can be picked at any time, which drops the current session -->
     <nav class="flex w-full shrink-0 justify-between gap-2">
       <button
         v-for="p in PHASES"
@@ -20,7 +24,7 @@
         class="tab flex-1 py-2 text-xs"
         :class="{ active: timer.phase === p.id }"
         :style="{ '--accent': ACCENTS[p.id] }"
-        :disabled="timer.locked"
+        :aria-pressed="timer.phase === p.id"
         @click="choosePhase(p.id)">
         {{ p.icon }} {{ p.title }}
       </button>
@@ -54,17 +58,21 @@
       <p class="h-4 text-xs text-slate-400">{{ hint }}</p>
     </section>
 
-    <div class="flex shrink-0 flex-wrap items-center justify-center gap-6">
-      <PixelButton :color="timer.running ? '#566c86' : accent" class="w-36" @click="toggle">
-        {{ timer.running ? 'Pause' : timer.touched ? 'Resume' : 'Start' }}
+    <!-- the skip slot keeps its width so the start button doesn't jump around -->
+    <div class="flex shrink-0 items-center justify-center gap-6 pl-[4.5rem]">
+      <PixelButton :color="timer.running ? '#566c86' : accent" class="w-40" @click="toggle">
+        {{ timer.running ? 'Pause' : 'Start' }}
       </PixelButton>
-      <PixelButton v-if="timer.touched && !timer.running" color="#b13e53" @click="timer.reset()">Reset</PixelButton>
-      <PixelButton v-if="!timer.locked" color="#333c57" @click="skip">Skip</PixelButton>
+      <div class="w-12">
+        <PixelButton v-if="timer.running" color="#333c57" class="w-12 !px-0" aria-label="Finish this round" @click="skip">
+          ⏭
+        </PixelButton>
+      </div>
     </div>
 
     <section class="flex w-full shrink-0 flex-col items-center gap-2">
       <h2 class="text-xs tracking-widest text-slate-400">
-        TODAY'S HARVEST · {{ untilLongBreak }} TO BIG REST
+        TODAY'S HARVEST · {{ timer.roundsToLongBreak }} TO BIG REST
       </h2>
       <OrangeBasket ref="basket" :count="timer.oranges" :per-crate="timer.ORANGES_PER_CRATE" :pending="pending" />
       <button v-if="timer.oranges > 0" class="text-xs text-slate-500 hover:text-slate-300" @click="clearOranges">
@@ -94,6 +102,8 @@
       <p class="banner px-6 py-3 text-lg" :style="{ background: banner.color }">{{ banner.text }}</p>
     </div>
   </Teleport>
+
+  <SettingsModal v-if="settingsOpen" @close="settingsOpen = false" />
 </template>
 
 <script setup>
@@ -105,8 +115,10 @@ import PixelSprite from './PixelSprite.vue'
 import PixelButton from './PixelButton.vue'
 import OrangeBasket from './OrangeBasket.vue'
 import Orange3D from './Orange3D.vue'
+import SettingsModal from './SettingsModal.vue'
 
 const ACCENTS = { focus: '#f7901e', short: '#38b764', long: '#41a6f6' }
+const PAGE_BG = { focus: '#1a1c2c', short: '#142420', long: '#141c2e' }
 const SEGMENTS = 20
 const PARTICLE_COLORS = ['#f7901e', '#ffcd75', '#ffe0a0', '#3fa535', '#fff']
 
@@ -123,6 +135,7 @@ const pending = ref(0)
 const particles = ref([])
 const floaters = ref([])
 const banner = ref(null)
+const settingsOpen = ref(false)
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -133,13 +146,7 @@ const clock = computed(() => {
 })
 const filledSegments = computed(() => Math.floor(timer.progress * SEGMENTS))
 const bigPalette = computed(() => (timer.phase === 'focus' ? paletteForProgress(timer.progress) : PALETTES.ripe))
-const untilLongBreak = computed(() => timer.ORANGES_PER_CRATE - timer.streak)
-const hint = computed(() => {
-  if (timer.phase !== 'focus' && !timer.locked) return 'take a break'
-  if (timer.phase !== 'focus' && timer.running) return 'rest a bit...'
-  if (!timer.running) return timer.touched ? 'paused · reset to switch mode' : 'press start or space'
-  return timer.progress < 0.4 ? 'growing...' : timer.progress < 0.8 ? 'ripening...' : 'almost ripe!'
-})
+const hint = computed(() => `#${timer.round} · ${timer.message}`)
 
 const sound = (name) => !timer.muted && sfx[name]()
 
@@ -244,13 +251,9 @@ async function playHarvest() {
   shake.value = true
   setTimeout(() => (shake.value = false), 300)
 
-  if (timer.oranges % timer.ORANGES_PER_CRATE === 0) {
-    sound('crate')
-    showBanner('CRATE FULL! BIG REST', ACCENTS.long)
-  } else {
-    sound('harvest')
-    showBanner('+1 ORANGE! BREAK TIME', ACCENTS.short, 1200)
-  }
+  sound(timer.oranges % timer.ORANGES_PER_CRATE === 0 ? 'crate' : 'harvest')
+  if (timer.phase === 'long') showBanner('+1 ORANGE! BIG REST', ACCENTS.long)
+  else showBanner('+1 ORANGE! BREAK TIME', ACCENTS.short, 1200)
 }
 
 watch(() => timer.harvestId, playHarvest)
@@ -265,13 +268,15 @@ watch(
 watch(
   [clock, () => timer.phase, () => timer.running],
   () => {
-    document.title = timer.running ? `${clock.value} ${PHASES[timer.phase].icon} Apelsini` : 'Apelsini'
+    document.title = `${clock.value} - ${timer.message}`
+    // tint the whole page per mode, the way pomofocus switches its background
+    document.documentElement.style.setProperty('--page-bg', PAGE_BG[timer.phase])
   },
   { immediate: true }
 )
 
 const onKey = (e) => {
-  if (e.code !== 'Space' || e.target.closest('button, input, textarea')) return
+  if (settingsOpen.value || e.code !== 'Space' || e.target.closest('button, input, textarea')) return
   e.preventDefault()
   toggle()
 }
@@ -300,8 +305,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   background: var(--accent);
   box-shadow: inset 0 -4px 0 0 rgb(0 0 0 / 0.3);
 }
-.tab:disabled:not(.active) {
-  opacity: 0.4;
+.tab:not(.active):hover {
+  color: #fff;
 }
 
 .bob {
