@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# secrets: every env file except the committed examples
+.env
+.env.*
+!.env.example
+
+# Claude Code instructions and local settings
+CLAUDE.md
+CLAUDE.local.md
+.claude/

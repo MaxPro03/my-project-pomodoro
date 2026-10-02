@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Phase {
+  focus
+  short
+  long
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  timezone     String      @default("UTC")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  timer        TimerState?
+  sessions     Session[]
+}
+
+// the live timer, one per user; same shape as the client's useTimerStore().snapshot()
+model TimerState {
+  userId    String    @id
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phase     Phase     @default(focus)
+  remaining Int // seconds left while paused
+  endAt     DateTime? // set while running
+  round     Int       @default(1)
+  oranges   Int       @default(0)
+  day       String // user's local YYYY-MM-DD the counters belong to
+  settings  Json
+  updatedAt DateTime // client time of the last change, for last-write-wins
+}
+
+// one finished (or skipped) phase, the source for all statistics
+model Session {
+  id        String   @id @default(cuid())
+  clientId  String   @unique // idempotency key sent by the client
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phase     Phase
+  endedAt   DateTime
+  seconds   Int // time actually spent in the phase
+  completed Boolean // false when the round was skipped early
+  day       String // user's local YYYY-MM-DD
+  createdAt DateTime @default(now())
+
+  @@index([userId, day])
+}
