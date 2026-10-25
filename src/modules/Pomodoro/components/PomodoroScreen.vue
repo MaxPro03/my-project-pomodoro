@@ -13,6 +13,8 @@
         <button class="text-sm text-slate-400 hover:text-white" aria-label="Settings" @click="settingsOpen = true">
           ⚙️
         </button>
+        <!-- filled by the page, e.g. the account button from the Auth module -->
+        <slot name="header" />
       </div>
     </header>
 

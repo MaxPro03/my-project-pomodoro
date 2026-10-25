@@ -17,7 +17,8 @@ enum Phase {
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
-  passwordHash String
+  passwordHash String? // null for accounts created with Google
+  googleId     String?     @unique // Google's `sub`, set once the user logs in with Google
   name         String
   timezone     String      @default("UTC")
   createdAt    DateTime    @default(now())
