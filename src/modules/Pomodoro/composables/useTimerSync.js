@@ -1,4 +1,4 @@
-// DRAFT: keeps the timer in sync with the backend. Wired from app/integrations/backend.js.
+// Keeps the timer in sync with the backend. Wired from app/integrations/backend.client.js.
 // Auth and stats come in through options (IoC), so Pomodoro doesn't import other modules.
 import { watch } from 'vue'
 import { fetchTimerState, saveTimerState } from '../api/timerApi'
@@ -26,7 +26,7 @@ export function useTimerSync({ isEnabled, onPhaseFinished }) {
       try {
         await saveTimerState(timer.snapshot())
       } catch (e) {
-        if (e.status === 409 && e.body?.state) timer.hydrate(e.body.state)
+        if (e.status === 409 && e.data?.state) timer.hydrate(e.data.state)
       }
     }, PUSH_DELAY)
   }

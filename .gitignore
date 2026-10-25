@@ -32,3 +32,10 @@ dist-ssr
 CLAUDE.md
 CLAUDE.local.md
 .claude/
+
+# Nuxt / Nitro build output and the generated Prisma client
+.nuxt
+.output
+.data
+.vercel
+generated

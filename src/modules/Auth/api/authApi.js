@@ -1,14 +1,20 @@
 import { http } from '@/common/utilities/http'
 
 /** @typedef {{ id: string, email: string, name: string, timezone: string, createdAt: string }} User */
-/** @typedef {{ token: string, user: User }} AuthResponse */
 
-/** @returns {Promise<AuthResponse>} */
+// register and login set the session cookie and answer with the user
+
+/** @returns {Promise<User>} */
 export const register = ({ email, password, name }) =>
   http('/auth/register', { method: 'POST', body: { email, password, name } })
 
-/** @returns {Promise<AuthResponse>} */
+/** @returns {Promise<User>} */
 export const login = ({ email, password }) => http('/auth/login', { method: 'POST', body: { email, password } })
+
+export const logout = () => http('/auth/logout', { method: 'POST' })
+
+/** the current session from nuxt-auth-utils, `{}` when logged out (no 401 noise on every app start) */
+export const fetchSession = () => http('/_auth/session')
 
 /** @returns {Promise<User>} */
 export const fetchMe = () => http('/users/me')
