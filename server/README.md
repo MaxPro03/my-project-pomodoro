@@ -6,7 +6,8 @@ Nitro server routes inside the Nuxt app, Prisma 7 (PostgreSQL via `@prisma/adapt
 ```
 api/                 routes (app layer: wires domains with prisma and the session)
   health.get           GET /api/health
-  auth/                POST /api/auth/register, /login → user (sets the session cookie), POST /api/auth/logout
+  auth/                POST /api/auth/register, /login → user (sets the session cookie), POST /api/auth/logout,
+                       GET /api/auth/google (OAuth: to Google and back, then redirect to / or /?login=failed)
   users/               GET /api/users/me, PATCH /api/users/me
   timer/               GET /api/timer, PUT /api/timer (last write wins, 409 + newer state on conflict)
   sessions.post        POST /api/sessions
@@ -22,6 +23,9 @@ Domains live in `domains/`, not `modules/`: Nitro loads everything in `server/mo
 
 ## Design notes
 
+- **Google login**: a Google account is matched by its `sub` (`User.googleId`); on the first login it is linked to
+  the existing user with the same verified email, otherwise a user without a password is created.
+  Credentials: `NUXT_OAUTH_GOOGLE_CLIENT_ID` / `NUXT_OAUTH_GOOGLE_CLIENT_SECRET`.
 - **Auth**: scrypt password hashes, the user is kept in a sealed httpOnly cookie (30 days, `NUXT_SESSION_PASSWORD`),
   so the client never handles a token. Later: rate limiting on register/login (on Vercel an in-memory limiter is
   per instance, so it needs Vercel Firewall or a shared store), email confirmation, password reset.

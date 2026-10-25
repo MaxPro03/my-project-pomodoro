@@ -43,6 +43,7 @@ prisma/       schema and migrations
 
 1. Create a Neon database and import the repo in Vercel (it detects Nuxt, no config needed).
 2. Vercel env: `DATABASE_URL` (Neon pooled string), `DIRECT_URL` (Neon direct string), `NUXT_SESSION_PASSWORD`
-   (32+ chars, `openssl rand -hex 32`).
+   (32+ chars, `openssl rand -hex 32`), and for Google login `NUXT_OAUTH_GOOGLE_CLIENT_ID` /
+   `NUXT_OAUTH_GOOGLE_CLIENT_SECRET`.
 3. Apply migrations: `npm run db:deploy` with those env vars, or set the Vercel build command to
    `npm run db:deploy && npm run build`.

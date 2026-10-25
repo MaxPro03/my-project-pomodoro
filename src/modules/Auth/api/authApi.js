@@ -11,6 +11,9 @@ export const register = ({ email, password, name }) =>
 /** @returns {Promise<User>} */
 export const login = ({ email, password }) => http('/auth/login', { method: 'POST', body: { email, password } })
 
+/** opened as a page, not fetched: it redirects to Google and back to `/` (or `/?login=failed`) */
+export const GOOGLE_LOGIN_URL = '/api/auth/google'
+
 export const logout = () => http('/auth/logout', { method: 'POST' })
 
 /** the current session from nuxt-auth-utils, `{}` when logged out (no 401 noise on every app start) */
