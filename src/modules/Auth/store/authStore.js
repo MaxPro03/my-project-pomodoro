@@ -2,21 +2,13 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import * as authApi from '../api/authApi'
 
-const TOKEN_KEY = 'apelsini:token'
-
+// the session itself is an httpOnly cookie set by the server, the store only keeps the user
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem(TOKEN_KEY))
   const user = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
-  const isLoggedIn = computed(() => Boolean(token.value && user.value))
-
-  const setSession = ({ token: nextToken, user: nextUser }) => {
-    token.value = nextToken
-    user.value = nextUser
-    localStorage.setItem(TOKEN_KEY, nextToken)
-  }
+  const isLoggedIn = computed(() => Boolean(user.value))
 
   async function run(action) {
     loading.value = true
@@ -24,33 +16,34 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       return await action()
     } catch (e) {
-      error.value = e.body?.message || e.message
+      error.value = e.data?.message || e.message
       throw e
     } finally {
       loading.value = false
     }
   }
 
-  const register = (form) => run(async () => setSession(await authApi.register(form)))
-  const login = (form) => run(async () => setSession(await authApi.login(form)))
+  const register = (form) => run(async () => (user.value = await authApi.register(form)))
+  const login = (form) => run(async () => (user.value = await authApi.login(form)))
 
-  const logout = () => {
-    token.value = null
-    user.value = null
-    localStorage.removeItem(TOKEN_KEY)
+  // drop the user locally, e.g. when the server answered 401
+  const forget = () => (user.value = null)
+
+  async function logout() {
+    forget()
+    await authApi.logout().catch(() => {})
   }
 
-  // pick the user back up from a saved token after a reload
+  // pick the user back up from the session cookie after a reload
   async function restore() {
-    if (!token.value) return
     try {
-      user.value = await authApi.fetchMe()
+      user.value = (await authApi.fetchSession()).user ?? null
     } catch (e) {
-      logout()
+      // offline or no server: stay logged out, the timer works locally anyway
     }
   }
 
   const updateProfile = (changes) => run(async () => (user.value = await authApi.updateMe(changes)))
 
-  return { token, user, loading, error, isLoggedIn, register, login, logout, restore, updateProfile }
+  return { user, loading, error, isLoggedIn, register, login, logout, forget, restore, updateProfile }
 })

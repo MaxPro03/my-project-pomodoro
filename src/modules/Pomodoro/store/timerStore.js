@@ -14,6 +14,13 @@ export const PHASES = {
   long: { id: 'long', title: 'REST', icon: '😴', message: 'Time for a break!' },
 }
 
+// what you are busy with during focus; the orange acts it out (ids are Orange3D poses)
+export const ACTIVITIES = {
+  run: { id: 'run', title: 'Sport', icon: '🏃' },
+  computer: { id: 'computer', title: 'Computer', icon: '💻' },
+  read: { id: 'read', title: 'Reading', icon: '📖' },
+}
+
 // same defaults as pomofocus.io, except breaks start on their own
 export const DEFAULT_SETTINGS = {
   focus: 25, // minutes
@@ -56,6 +63,7 @@ export const useTimerStore = defineStore('timerStore', () => {
   // "#N" on pomofocus: the current pomodoro of the day, goes up when a break ends
   const round = ref(sameDay ? saved.round ?? (saved.streak ?? 0) + 1 : 1)
   const muted = ref(saved.muted ?? false)
+  const activity = ref(ACTIVITIES[saved.activity] ? saved.activity : 'run')
   const day = ref(today())
 
   // bump every time an orange is earned / a break runs out so the UI can react
@@ -187,7 +195,7 @@ export const useTimerStore = defineStore('timerStore', () => {
     round.value = 1
   }
 
-  // state shared between devices; muted stays per device
+  // state shared between devices; muted and activity stay per device
   const snapshot = () => ({
     phase: phase.value,
     remaining: remaining.value,
@@ -218,7 +226,7 @@ export const useTimerStore = defineStore('timerStore', () => {
   }
 
   watch(
-    [phase, remaining, endAt, oranges, round, muted, day, settings],
+    [phase, remaining, endAt, oranges, round, muted, activity, day, settings],
     () => {
       if (!applyingRemote) updatedAt.value = Date.now()
       applyingRemote = false
@@ -231,6 +239,7 @@ export const useTimerStore = defineStore('timerStore', () => {
           oranges: oranges.value,
           round: round.value,
           muted: muted.value,
+          activity: activity.value,
           day: day.value,
           settings: settings.value,
           updatedAt: updatedAt.value,
@@ -252,6 +261,7 @@ export const useTimerStore = defineStore('timerStore', () => {
     oranges,
     round,
     muted,
+    activity,
     settings,
     harvestId,
     phaseEndId,

@@ -1,8 +1,7 @@
-import { createPinia } from 'pinia'
+import { defineNuxtPlugin } from '#app'
 import { resetStore } from './resetStore'
 
-export function createStore() {
-  const pinia = createPinia()
-  pinia.use(resetStore)
-  return pinia
-}
+// Pinia itself is installed by @pinia/nuxt; this adds $reset() to setup stores
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.$pinia.use(resetStore)
+})

@@ -1,9 +1,10 @@
-# Auth (draft, not wired yet)
+# Auth
 
 Registration, login and the current user.
 
-- `useAuthStore()` — `token`, `user`, `isLoggedIn`, `register()`, `login()`, `logout()`, `restore()`, `updateProfile()`
+- `useAuthStore()` — `user`, `isLoggedIn`, `register()`, `login()`, `logout()`, `forget()` (drop the user locally), `restore()`, `updateProfile()`
 - `AuthForm` — pixel login / sign up form
 
-The JWT lives in `localStorage` (`apelsini:token`) and is handed to the HTTP client from `app/integrations/backend.js`.
-Backend endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `GET|PATCH /api/users/me`.
+The session is an httpOnly cookie set by the server, so there is no token on the client; `restore()` reads
+`GET /api/_auth/session` on start (from `app/integrations/backend.client.js`). Not shown on the page yet.
+Backend endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET|PATCH /api/users/me`.

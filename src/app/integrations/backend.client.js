@@ -1,20 +1,16 @@
-// DRAFT: not imported anywhere yet. Wires the backend modules together once server/ is live:
-//   entry.js -> if (config.backendEnabled) connectBackend()
+// Wires the backend modules together. The API is served by this same Nuxt app (server/api),
+// auth is an httpOnly session cookie, so there is no base url or token to pass around.
+import { defineNuxtPlugin } from '#app'
 import { configureHttp } from '@/common/utilities/http'
 import { useAuthStore } from '@/modules/Auth'
 import { useTimerSync } from '@/modules/Pomodoro'
 import { useStatsStore } from '@/modules/Stats'
-import { config } from '../config'
 
-export async function connectBackend() {
+export default defineNuxtPlugin(() => {
   const auth = useAuthStore()
   const stats = useStatsStore()
 
-  configureHttp({
-    baseUrl: config.apiUrl,
-    getToken: () => auth.token,
-    onUnauthorized: () => auth.logout(),
-  })
+  configureHttp({ onUnauthorized: () => auth.forget() })
 
   // modules don't know about each other: auth and stats are passed in here
   useTimerSync({
@@ -22,5 +18,5 @@ export async function connectBackend() {
     onPhaseFinished: (session) => stats.recordSession(session),
   })
 
-  await auth.restore()
-}
+  auth.restore()
+})

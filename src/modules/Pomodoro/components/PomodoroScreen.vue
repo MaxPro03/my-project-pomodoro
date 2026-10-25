@@ -32,15 +32,30 @@
 
     <!-- the stage takes whatever height is left, the orange shrinks to fit it -->
     <section
-      class="stage flex max-h-[28rem] min-h-0 w-full flex-1 flex-col items-center gap-4 p-6"
+      class="stage relative flex max-h-[28rem] min-h-0 w-full flex-1 flex-col items-center gap-4 p-6"
       :style="{ '--accent': accent }">
+      <!-- what you are doing right now; can be changed any time, the orange switches along -->
+      <div class="absolute left-3 top-3 flex flex-col gap-2" role="group" aria-label="What are you doing">
+        <button
+          v-for="a in ACTIVITIES"
+          :key="a.id"
+          class="tab activity h-8 w-8 text-sm"
+          :class="{ active: timer.activity === a.id }"
+          :title="a.title"
+          :aria-label="a.title"
+          :aria-pressed="timer.activity === a.id"
+          @click="chooseActivity(a.id)">
+          {{ a.icon }}
+        </button>
+      </div>
       <div class="flex min-h-0 w-full flex-1 items-center justify-center">
-        <div ref="bigOrange" class="orange-box relative" :class="{ bob: timer.running, jump: jumping }">
+        <div ref="bigOrange" class="orange-box relative" :class="{ jump: jumping }">
           <Orange3D
             class="h-full w-full"
             :palette="bigPalette"
             :pose="orangePose"
             :expression="orangeMood"
+            :pace="orangePace"
             :style="{ opacity: flying ? 0.25 : 1 }" />
           <span v-if="timer.phase !== 'focus'" class="zzz absolute -right-6 -top-2 text-lg text-sky-300">z</span>
         </div>
@@ -113,7 +128,7 @@ import { ORANGE, PALETTES, Orange3D, OrangeBasket, paletteForProgress } from '@/
 import PixelButton from '@/common/ui/PixelButton.vue'
 import PixelSprite from '@/common/ui/PixelSprite.vue'
 import { sfx } from '@/common/utilities/sfx'
-import { PHASES, useTimerStore } from '../store/timerStore'
+import { ACTIVITIES, PHASES, useTimerStore } from '../store/timerStore'
 import SettingsModal from './SettingsModal.vue'
 
 const ACCENTS = { focus: '#f7901e', short: '#38b764', long: '#41a6f6' }
@@ -149,8 +164,10 @@ const orangePose = computed(() => {
   if (jumping.value || flying.value) return 'cheer'
   if (timer.phase === 'long') return 'lie'
   if (timer.phase === 'short') return 'sit'
-  return timer.running ? 'work' : 'stand'
+  return timer.running ? timer.activity : 'stand'
 })
+// start calm and speed up to 2.5x as the focus session runs out (run faster, type faster)
+const orangePace = computed(() => (orangePose.value === timer.activity ? 1 + timer.progress * 1.5 : 1))
 const orangeMood = computed(() => (jumping.value || flying.value ? 'happy' : timer.onBreak ? 'sleep' : 'open'))
 const hint = computed(() => `#${timer.round} · ${timer.message}`)
 
@@ -163,6 +180,10 @@ const toggle = () => {
 const skip = () => {
   sound('blip')
   timer.skip()
+}
+const chooseActivity = (id) => {
+  sound('blip')
+  timer.activity = id
 }
 const choosePhase = (id) => {
   sound('blip')
@@ -314,10 +335,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .tab:not(.active):hover {
   color: #fff;
 }
-
-.bob {
-  animation: bob 1s steps(2) infinite;
+.activity {
+  background: #333c57; /* the stage is the same color as a plain tab */
 }
+.activity.active {
+  background: var(--accent);
+  box-shadow: inset 0 -3px 0 0 rgb(0 0 0 / 0.3);
+}
+
 .jump {
   animation: jump 300ms steps(5) both;
 }
@@ -348,9 +373,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   animation: banner 400ms steps(4) both;
 }
 
-@keyframes bob {
-  50% { transform: translateY(-4px); }
-}
 @keyframes jump {
   0% { transform: scale(1.2, 0.8); filter: brightness(1.8); }
   40% { transform: translateY(-24px) scale(0.9, 1.1); }
@@ -400,7 +422,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bob, .jump, .zzz, .shake, .particle, .floater, .banner {
+  .jump, .zzz, .shake, .particle, .floater, .banner {
     animation: none;
   }
 }
