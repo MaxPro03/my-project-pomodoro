@@ -1,0 +1,10 @@
+{
+  // editor support only (the project is plain JS): Nuxt generates the real config with the @/ and ~/ aliases
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}
