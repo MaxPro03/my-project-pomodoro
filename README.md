@@ -45,5 +45,6 @@ prisma/       schema and migrations
 2. Vercel env: `DATABASE_URL` (Neon pooled string), `DIRECT_URL` (Neon direct string), `NUXT_SESSION_PASSWORD`
    (32+ chars, `openssl rand -hex 32`), and for Google login `NUXT_OAUTH_GOOGLE_CLIENT_ID` /
    `NUXT_OAUTH_GOOGLE_CLIENT_SECRET`.
-3. Apply migrations: `npm run db:deploy` with those env vars, or set the Vercel build command to
-   `npm run db:deploy && npm run build`.
+3. Migrations are applied on every Vercel build (`vercel.json`: `npm run db:deploy && npm run build`), so the env vars
+   must be available to Preview builds too. If Preview deployments share the production database, migrations from
+   unmerged branches reach it as well — give Preview its own Neon branch to avoid that.

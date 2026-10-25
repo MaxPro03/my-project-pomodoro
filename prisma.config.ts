@@ -9,5 +9,5 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: { path: 'prisma/migrations' },
   // migrations need a direct connection, the app itself can use Neon's pooled DATABASE_URL
-  datasource: { url: process.env.DIRECT_URL ?? process.env.DATABASE_URL },
+  datasource: { url: process.env.DIRECT_URL || process.env.DATABASE_URL },
 })
